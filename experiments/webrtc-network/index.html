@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nexory Peerly · WebRTC Network Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <header><span class="eyebrow">NEXORY PEERLY / THỬ NGHIỆM M0</span><h1>Kiểm tra đường truyền WebRTC</h1><p>Gửi tin qua RTCDataChannel và xác nhận peer đã nhận. Signaling bằng mã sao chép, chưa cần backend.</p></header>
+  <div id="notice" role="status">Sẵn sàng. Bắt đầu bằng “Tự thử trong một tab” hoặc kết nối hai máy bên dưới.</div>
+  <section>
+    <h2>1. Chọn cấu hình mạng</h2>
+    <div class="grid">
+      <label>Chế độ<select id="network"><option value="local">Local / LAN — không dùng STUN/TURN</option><option value="stun">STUN — thử kết nối khác mạng</option><option value="relay">TURN — bắt buộc dùng relay</option></select></label>
+      <label>STUN URL<input id="stun" value="stun:stun.l.google.com:19302" spellcheck="false"></label>
+    </div>
+    <details><summary>Cấu hình TURN của bạn (cần khi chọn relay)</summary><div class="grid">
+      <label>TURN URL<input id="turn" placeholder="turn:your-server:3478" spellcheck="false"></label>
+      <label>Username<input id="turn-user" autocomplete="off"></label>
+      <label>Credential<input id="turn-password" type="password" autocomplete="off"></label>
+    </div><p>Chỉ dùng trong bộ nhớ tab, không ghi vào báo cáo. Thử nghiệm này không cấp máy chủ TURN.</p></details>
+    <div class="actions"><button id="self-test">Tự thử trong một tab</button><button id="reset" class="secondary">Đóng / làm lại</button><button id="export" class="secondary">Tải báo cáo JSON</button></div>
+    <p class="hint">Tự thử chỉ chứng minh WebRTC hoạt động trên máy hiện tại; không chứng minh vượt NAT hoặc kết nối hai mạng. Chế độ STUN gửi yêu cầu ICE đến máy chủ STUN đã nhập.</p>
+  </section>
+  <section>
+    <h2>2. Kết nối hai trình duyệt / hai máy</h2>
+    <ol><li>Máy A bấm <strong>Tạo offer (A)</strong>, chờ thu thập ICE, gửi mã xuất ra cho B.</li><li>Máy B dán offer vào ô nhập, bấm <strong>Nhận offer & tạo answer (B)</strong>, gửi mã answer cho A.</li><li>Máy A dán answer, bấm <strong>Nhận answer (A)</strong>. Chờ DataChannel mở rồi gửi tin ở cả hai phía.</li></ol>
+    <div class="actions"><button id="offer">Tạo offer (A)</button><button id="answer" class="secondary">Nhận offer & tạo answer (B)</button><button id="apply" class="secondary">Nhận answer (A)</button></div>
+    <div class="grid"><label>Mã gửi cho peer<textarea id="outgoing" readonly rows="5" placeholder="Mã chỉ xuất hiện sau khi ICE gathering hoàn tất"></textarea></label><label>Mã nhận từ peer<textarea id="incoming" rows="5" placeholder="Dán toàn bộ JSON offer hoặc answer ở đây" spellcheck="false"></textarea></label></div>
+    <p class="hint">Mã chứa thông tin kết nối SDP/ICE; chỉ trao đổi với người tham gia thử. Không đưa mã lên Git hoặc báo cáo công khai. Hai máy có thể tự chạy bản thử trên localhost riêng.</p>
+  </section>
+  <section>
+    <h2>3. Trạng thái và đường đi đã chọn</h2>
+    <div class="stats"><div>Peer connection<strong id="connection">—</strong></div><div>ICE<strong id="ice">—</strong></div><div>DataChannel<strong id="channel">—</strong></div><div>Đường truyền<strong id="route">Chưa xác định</strong></div></div>
+    <p id="candidates">Candidate cục bộ: chưa thu thập.</p><p id="pair">Chưa có candidate pair được chọn.</p><p id="traffic">Chưa có số liệu.</p><p id="scope" class="hint">Chưa chạy thử nghiệm.</p>
+  </section>
+  <section>
+    <h2>4. Gửi tin thử</h2>
+    <form id="chat-form"><label for="message">Nội dung (tối đa 4 KiB UTF-8)</label><div class="send"><input id="message" value="Xin chào từ Nexory Peerly!" maxlength="4096"><button id="send" disabled>Gửi qua DataChannel</button></div></form>
+    <p>“Đã nhận” chỉ xuất hiện khi peer trả ACK qua DataChannel; không có API lưu lịch sử trong bản thử.</p>
+    <ul id="messages" aria-live="polite"></ul>
+  </section>
+  <section><h2>Nhật ký chẩn đoán</h2><pre id="log" aria-live="polite"></pre></section>
+</main>
+</body>
+</html>

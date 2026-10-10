@@ -1,0 +1,25 @@
+:root {
+  color-scheme: dark;
+
+  /* Background layers */
+  --color-background: #0B1022;
+  --color-surface: #151E3A;
+  --color-surface-elevated: #1D2945;
+
+  /* Brand and interaction */
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #7C3AED;
+  --color-secondary: #22D3EE;
+
+  /* Typography */
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #A9B6D2;
+
+  /* Feedback */
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #FB7185;
+
+  /* Boundaries */
+  --color-border: #2C3554;
+}

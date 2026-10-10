@@ -1,0 +1,13 @@
+@import "./variables.css";
+
+/* Base theme; component styles will use the shared color tokens. */
+html {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}

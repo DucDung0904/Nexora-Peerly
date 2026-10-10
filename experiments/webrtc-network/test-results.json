@@ -1,0 +1,159 @@
+﻿{
+    "result":  "PASS",
+    "scope":  "one headless browser on one Windows host; separate same-origin page contexts, not separate devices",
+    "browser":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "results":  [
+                    {
+                        "test":  "same-tab DataChannel + application ACK + reverse message",
+                        "result":  "PASS",
+                        "pair":  "Candidate đã chọn: host ↔ host · udp. Không hiển thị địa chỉ IP.",
+                        "traffic":  "ICE RTT: 0 ms · Gửi: 2196 B · Nhận: 2333 B (thống kê candidate pair, không chỉ payload chat)."
+                    },
+                    {
+                        "test":  "invalid signaling JSON rejected without starting a peer",
+                        "result":  "PASS"
+                    },
+                    {
+                        "test":  "forced relay requires TURN credentials",
+                        "result":  "PASS"
+                    },
+                    {
+                        "test":  "answer from another session rejected",
+                        "result":  "PASS"
+                    },
+                    {
+                        "test":  "two separate page contexts, manual offer/answer, messages + ACK both ways, HTML treated as text",
+                        "result":  "PASS",
+                        "pair":  "Candidate đã chọn: host ↔ host · udp. Không hiển thị địa chỉ IP."
+                    },
+                    {
+                        "test":  "UTF-8 payload size limit enforced",
+                        "result":  "PASS"
+                    },
+                    {
+                        "test":  "diagnostic export excludes message content and raw SDP",
+                        "result":  "PASS",
+                        "report":  {
+                                       "version":  1,
+                                       "exportedAt":  "2026-10-09T16:01:54.430Z",
+                                       "startedAt":  "2026-10-09T16:01:53.641Z",
+                                       "mode":  "manual",
+                                       "iceMode":  "local",
+                                       "scopeWarning":  "Self-test chỉ chạy cùng máy. Manual cần tự ghi rõ thiết bị/mạng. Không suy ra NAT traversal từ self-test.",
+                                       "browser":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+                                       "secureContext":  true,
+                                       "state":  {
+                                                     "connection":  "connected",
+                                                     "ice":  "connected",
+                                                     "channel":  "open"
+                                                 },
+                                       "localCandidateCounts":  {
+                                                                    "host":  1
+                                                                },
+                                       "selectedCandidatePair":  {
+                                                                     "route":  "Direct (không TURN)",
+                                                                     "localType":  "host",
+                                                                     "remoteType":  "host",
+                                                                     "protocol":  "udp",
+                                                                     "currentRoundTripTimeMs":  1,
+                                                                     "bytesSent":  2177,
+                                                                     "bytesReceived":  5152,
+                                                                     "sampledAt":  "2026-10-09T16:01:54.089Z"
+                                                                 },
+                                       "selfTest":  null,
+                                       "messageResults":  [
+                                                              {
+                                                                  "direction":  "out",
+                                                                  "status":  "Đã nhận — peer trả ACK"
+                                                              },
+                                                              {
+                                                                  "direction":  "in",
+                                                                  "status":  "Đã nhận qua DataChannel"
+                                                              }
+                                                          ],
+                                       "logs":  [
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.642Z",
+                                                        "text":  "Bắt đầu manual test; cấu hình local."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.647Z",
+                                                        "text":  "signalingstatechange: new / ICE new / gathering new"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.649Z",
+                                                        "text":  "icegatheringstatechange: new / ICE new / gathering gathering"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.778Z",
+                                                        "text":  "icegatheringstatechange: new / ICE new / gathering complete"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.779Z",
+                                                        "text":  "Xuất offer có ICE candidates; không ghi SDP vào nhật ký."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.866Z",
+                                                        "text":  "iceconnectionstatechange: new / ICE checking / gathering complete"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.866Z",
+                                                        "text":  "connectionstatechange: connecting / ICE checking / gathering complete"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:53.961Z",
+                                                        "text":  "Answer không thuộc offer hiện tại. Kiểm tra đúng cặp và thử lại."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.083Z",
+                                                        "text":  "signalingstatechange: connecting / ICE checking / gathering complete"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.084Z",
+                                                        "text":  "iceconnectionstatechange: connecting / ICE connected / gathering complete"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.087Z",
+                                                        "text":  "connectionstatechange: connected / ICE connected / gathering complete"
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.088Z",
+                                                        "text":  "DataChannel OPEN; sẵn sàng gửi dữ liệu."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.192Z",
+                                                        "text":  "Gửi CHAT_MESSAGE qua DataChannel."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.195Z",
+                                                        "text":  "Nhận CHAT_ACK qua DataChannel."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.302Z",
+                                                        "text":  "Peer hiện tại nhận CHAT_MESSAGE qua DataChannel."
+                                                    },
+                                                    {
+                                                        "at":  "2026-10-09T16:01:54.429Z",
+                                                        "text":  "Nhập nội dung không rỗng, tối đa 4096 byte UTF-8."
+                                                    }
+                                                ],
+                                       "omitted":  "Không xuất nội dung chat, SDP, địa chỉ IP, URL ICE server hoặc TURN credential."
+                                   }
+                    },
+                    {
+                        "test":  "remote close disables send, fresh connection after reset, no unhandled browser errors",
+                        "result":  "PASS"
+                    },
+                    {
+                        "test":  "public STUN candidate gathering (not a two-network connection test)",
+                        "result":  "PASS",
+                        "candidateCounts":  {
+                                                "host":  1,
+                                                "srflx":  1
+                                            },
+                        "interpretation":  "Server-reflexive candidate gathered; no proof of successful NAT traversal to a remote device.",
+                        "gatheringCompleted":  true,
+                        "log":  "16:01:54.768  Bắt đầu manual test; cấu hình stun.\n16:01:54.771  signalingstatechange: new / ICE new / gathering new\n16:01:54.771  icegatheringstatechange: new / ICE new / gathering gathering\n16:01:54.811  ICE server error 701. Không ghi địa chỉ/credential vào log.\n16:01:54.911  icegatheringstatechange: new / ICE new / gathering complete\n16:01:54.911  Xuất offer có ICE candidates; không ghi SDP vào nhật ký."
+                    }
+                ]
+}
