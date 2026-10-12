@@ -116,7 +116,7 @@ export function Modal({
         <h2 id={titleId}>{title}</h2>
         <button
           className="icon-button"
-          aria-label="Close dialog"
+          aria-label="Đóng hộp thoại"
           onClick={onClose}
         >
           <X size={20} />
@@ -134,17 +134,17 @@ export function ConfirmationDialog({
   onConfirm: () => void;
 }) {
   return (
-    <Modal title="End this conversation?" onClose={onClose}>
+    <Modal title="Kết thúc cuộc trò chuyện?" onClose={onClose}>
       <p className="modal-copy">
-        This will disconnect your demo session and clear its messages. You can
-        always discover someone new.
+        Thao tác này sẽ kết thúc phiên trò chuyện minh họa và xóa các tin nhắn của phiên.
+        Bạn luôn có thể khám phá những kết nối mới.
       </p>
       <div className="modal-actions">
         <CosmicButton variant="secondary" onClick={onClose}>
-          Keep chatting
+          Tiếp tục trò chuyện
         </CosmicButton>
         <CosmicButton variant="danger" onClick={onConfirm}>
-          End conversation
+          Kết thúc trò chuyện
         </CosmicButton>
       </div>
     </Modal>
@@ -168,7 +168,7 @@ export function ToastNotification({
       <button
         className="icon-button"
         onClick={onDismiss}
-        aria-label="Dismiss notification"
+        aria-label="Đóng thông báo"
       >
         <X size={16} />
       </button>

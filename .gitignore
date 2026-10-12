@@ -1,0 +1,6 @@
+# Local database data, downloaded tooling, and generated credentials
+/.local/
+/.env
+/.env.*
+!/.env.example
+/backend/target/

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.nexory.peerly</groupId>
+  <artifactId>peerly-database</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <!-- Database migration module only; no Spring Boot API is claimed here. -->
+  <packaging>pom</packaging>
+  <properties>
+    <flyway.version>13.10.0</flyway.version>
+    <postgresql.version>42.7.14</postgresql.version>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>${flyway.version}</version>
+        <configuration>
+          <url>jdbc:postgresql://${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}</url>
+          <user>${env.DB_USERNAME}</user>
+          <password>${env.DB_PASSWORD}</password>
+          <locations><location>filesystem:${project.basedir}/src/main/resources/db/migration</location></locations>
+          <cleanDisabled>true</cleanDisabled>
+          <validateMigrationNaming>true</validateMigrationNaming>
+          <baselineOnMigrate>false</baselineOnMigrate>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId><version>${flyway.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>${postgresql.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>

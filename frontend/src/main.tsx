@@ -7,16 +7,17 @@ import "@fontsource/inter/600.css";
 import "@fontsource/sora/400.css";
 import "@fontsource/sora/500.css";
 import "@fontsource/sora/600.css";
-import { SessionProvider } from "./contexts/SessionContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { App } from "./App";
 import "./styles/global.css";
 import "./styles/cosmic.css";
+import "./styles/integration.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <SessionProvider>
+      <AuthProvider>
         <App />
-      </SessionProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );
