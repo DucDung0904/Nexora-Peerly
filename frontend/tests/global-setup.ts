@@ -2,6 +2,7 @@ import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { randomBytes } from "node:crypto";
 import { existsSync, readdirSync } from "node:fs";
+import { copyFile, mkdir, unlink } from "node:fs/promises";
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -68,21 +69,38 @@ export default async function globalSetup() {
   const name = `nexora-browser-${process.pid}-${randomBytes(4).toString("hex")}`;
   const password = randomBytes(24).toString("base64url");
   const backendPort = await freePort();
+  const testJar = resolve(frontendDirectory, ".local", `${name}.jar`);
+  const turnName = `${name}-turn`;
+  const turnSecret = randomBytes(24).toString("base64url");
+  let turnStarted = false;
+  let frontend: ReturnType<typeof spawn> | undefined;
   let containerStarted = false;
   let backend: ReturnType<typeof spawn> | undefined;
   let backendOutput = "";
 
   async function cleanup() {
-    if (backend && backend.exitCode === null) {
-      const stopped = new Promise<void>((resolveStop) =>
-        backend!.once("exit", () => resolveStop()),
-      );
-      backend.kill();
-      await Promise.race([
-        stopped,
-        new Promise((resolveStop) => setTimeout(resolveStop, 5_000)),
-      ]);
-      if (backend.exitCode === null) backend.kill("SIGKILL");
+    for (const child of [frontend, backend]) {
+      if (child && child.exitCode === null) {
+        const stopped = new Promise<void>((resolveStop) =>
+          child.once("exit", () => resolveStop()),
+        );
+        if (process.platform === "win32" && child.pid) {
+          // Java launcher shims may spawn another JVM; terminate only our spawned tree.
+          await exec("taskkill", ["/pid", String(child.pid), "/t", "/f"], {
+            windowsHide: true,
+          }).catch(() => undefined);
+        } else child.kill();
+        await Promise.race([
+          stopped,
+          new Promise((resolveStop) => setTimeout(resolveStop, 5_000)),
+        ]);
+        if (child.exitCode === null) child.kill("SIGKILL");
+      }
+    }
+    if (turnStarted) {
+      await exec(docker, ["rm", "--force", "--volumes", turnName], {
+        windowsHide: true,
+      }).catch(() => undefined);
     }
     if (containerStarted) {
       // The unique name belongs only to this run; no project volumes or user
@@ -91,9 +109,13 @@ export default async function globalSetup() {
         windowsHide: true,
       }).catch(() => undefined);
     }
+    await unlink(testJar).catch(() => undefined);
   }
 
   try {
+    await mkdir(dirname(testJar), { recursive: true });
+    // Windows locks running JARs; keep Maven's build output available for rebuilds.
+    await copyFile(resolve(target, jars[0]), testJar);
     await exec(docker, ["version", "--format", "{{.Server.Version}}"], {
       windowsHide: true,
       timeout: 20_000,
@@ -150,7 +172,48 @@ export default async function globalSetup() {
       }
     }, "isolated PostgreSQL");
 
-    backend = spawn(java, ["-jar", resolve(target, jars[0])], {
+    // Local-only relay fixture; allowing loopback peers is restricted to this test container.
+    await exec(
+      docker,
+      [
+        "run",
+        "--detach",
+        "--rm",
+        "--name",
+        turnName,
+        "--label",
+        "com.nexora.purpose=browser-tests",
+        "--publish",
+        "127.0.0.1::3478/udp",
+        "--publish",
+        "127.0.0.1:49400-49420:49400-49420/udp",
+        "coturn/coturn:4.18.0-r0",
+        "-n",
+        "--log-file=stdout",
+        "--no-cli",
+        "--realm=nexory-test",
+        "--use-auth-secret",
+        `--static-auth-secret=${turnSecret}`,
+        "--external-ip=127.0.0.1",
+        "--min-port=49400",
+        "--max-port=49420",
+        "--allow-loopback-peers",
+        "--no-multicast-peers",
+        "--no-tcp-relay",
+      ],
+      { windowsHide: true, timeout: 120_000 },
+    );
+    turnStarted = true;
+    const turnPort = (
+      await exec(docker, ["port", turnName, "3478/udp"], { windowsHide: true })
+    ).stdout
+      .trim()
+      .split(":")
+      .at(-1);
+    if (!turnPort || !/^\d+$/.test(turnPort))
+      throw new Error("Docker did not report the test TURN port.");
+
+    backend = spawn(java, ["-jar", testJar], {
       cwd: backendDirectory,
       windowsHide: true,
       env: {
@@ -163,6 +226,8 @@ export default async function globalSetup() {
         SERVER_ADDRESS: "127.0.0.1",
         SERVER_PORT: String(backendPort),
         CORS_ORIGINS: "http://127.0.0.1:5178,http://localhost:5178",
+        TURN_URLS: `turn:127.0.0.1:${turnPort}?transport=udp`,
+        TURN_SHARED_SECRET: turnSecret,
         // Override inherited Spring settings so an outside environment cannot
         // redirect migrations to the user's normal server.
         SPRING_DATASOURCE_URL: `jdbc:postgresql://127.0.0.1:${databasePort}/nexora_browser_test`,
@@ -202,6 +267,48 @@ export default async function globalSetup() {
       }
     }, "isolated Spring Boot backend");
     process.env.NEXORA_E2E_API_URL = backendUrl;
+    // Start Vite after the API so HTTP and native WebSocket share the real proxy.
+    frontend = spawn(
+      process.execPath,
+      [
+        resolve(frontendDirectory, "node_modules/vite/bin/vite.js"),
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5178",
+        "--strictPort",
+      ],
+      {
+        cwd: frontendDirectory,
+        windowsHide: true,
+        env: {
+          ...process.env,
+          BACKEND_URL: backendUrl,
+          VITE_API_BASE_URL: "/api",
+        },
+        stdio: "ignore",
+      },
+    );
+    let frontendError: Error | undefined;
+    frontend.on("error", (error) => {
+      frontendError = error;
+    });
+    await waitFor(async () => {
+      if (frontendError) throw frontendError;
+      if (frontend?.exitCode !== null)
+        throw new Error(
+          "Test Vite server exited; check that port 5178 is free.",
+        );
+      try {
+        return (
+          await fetch("http://127.0.0.1:5178", {
+            signal: AbortSignal.timeout(2000),
+          })
+        ).ok;
+      } catch {
+        return false;
+      }
+    }, "isolated frontend proxy");
     return cleanup;
   } catch (error) {
     await cleanup();

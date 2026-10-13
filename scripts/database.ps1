@@ -57,11 +57,13 @@ try {
     if ($Action -eq 'init' -and -not (Test-Path -LiteralPath $taskEnvPath)) {
         $adminBytes = New-Object byte[] 32
         $appBytes = New-Object byte[] 32
+        $turnBytes = New-Object byte[] 32
         $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-        try { $rng.GetBytes($adminBytes); $rng.GetBytes($appBytes) } finally { $rng.Dispose() }
+        try { $rng.GetBytes($adminBytes); $rng.GetBytes($appBytes); $rng.GetBytes($turnBytes) } finally { $rng.Dispose() }
         $adminSecret = [BitConverter]::ToString($adminBytes).Replace('-','').ToLowerInvariant()
         $appSecret = [BitConverter]::ToString($appBytes).Replace('-','').ToLowerInvariant()
-        $content = "POSTGRES_USER=peerly_admin`nPOSTGRES_PASSWORD=$adminSecret`nPOSTGRES_DB=postgres`nDB_HOST=127.0.0.1`nDB_PORT=5433`nDB_NAME=nexory_peerly`nDB_USERNAME=peerly`nDB_PASSWORD=$appSecret`n"
+        $turnSecret = [BitConverter]::ToString($turnBytes).Replace('-','').ToLowerInvariant()
+        $content = "POSTGRES_USER=peerly_admin`nPOSTGRES_PASSWORD=$adminSecret`nPOSTGRES_DB=postgres`nDB_HOST=127.0.0.1`nDB_PORT=5433`nDB_NAME=nexory_peerly`nDB_USERNAME=peerly`nDB_PASSWORD=$appSecret`nTURN_SHARED_SECRET=$turnSecret`nTURN_EXTERNAL_IP=127.0.0.1`n"
         [IO.File]::WriteAllText($taskEnvPath, $content, [Text.UTF8Encoding]::new($false))
         Write-Host 'Generated separate random credentials in ignored .env; passwords are not printed.'
     }

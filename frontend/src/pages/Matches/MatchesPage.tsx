@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -48,6 +48,7 @@ function initials(name: string): string {
 
 export function MatchesPage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [loadError, setLoadError] = useState("");
@@ -56,6 +57,8 @@ export function MatchesPage() {
   const [blockPending, setBlockPending] = useState(false);
   const [blockError, setBlockError] = useState("");
   const [notice, setNotice] = useState("");
+  const [openingChat, setOpeningChat] = useState<string | null>(null);
+  const [chatError, setChatError] = useState("");
 
   useEffect(() => {
     if (!token) return;
@@ -103,6 +106,20 @@ export function MatchesPage() {
       );
     } finally {
       setBlockPending(false);
+    }
+  }
+
+  async function openChat(match: Match) {
+    if (!token || openingChat) return;
+    setOpeningChat(match.id);
+    setChatError("");
+    try {
+      const conversation = await api.openConversation(token, match.id);
+      navigate(`/messages?conversation=${encodeURIComponent(conversation.id)}`);
+    } catch (error) {
+      setChatError(errorMessage(error, "Chưa thể mở cuộc trò chuyện. Hãy làm mới danh sách và thử lại."));
+    } finally {
+      setOpeningChat(null);
     }
   }
 
@@ -165,6 +182,7 @@ export function MatchesPage() {
           </button>
         </div>
       )}
+      {chatError && <div className="peer-chat-error" role="alert">{chatError}</div>}
       {loadError && (
         <ErrorState title="Chưa tải được kết nối">
           <span>{loadError}</span>
@@ -229,11 +247,11 @@ export function MatchesPage() {
                   </time>
                 </p>
                 <div className="connection-actions">
-                  <Link to="/messages" className="connection-message-link">
+                  <button type="button" className="connection-message-link" disabled={openingChat !== null || blockPending} onClick={() => void openChat(match)}>
                     <MessageCircle size={17} aria-hidden="true" />
-                    Thông tin nhắn tin
+                    {openingChat === match.id ? "Đang mở…" : "Bắt đầu trò chuyện"}
                     <ArrowUpRight size={15} aria-hidden="true" />
-                  </Link>
+                  </button>
                   <button
                     type="button"
                     className="connection-block"
@@ -255,10 +273,7 @@ export function MatchesPage() {
       )}
       <div className="connections-chat-note">
         <MessageCircle size={19} aria-hidden="true" />
-        <p>
-          <strong>Nhắn tin đang được phát triển.</strong> Hiện bạn có thể tìm
-          người phù hợp, gửi lời thích và quản lý kết nối tại đây.
-        </p>
+        <p><strong>Tin nhắn dùng kết nối WebRTC riêng tư.</strong> Hai thiết bị trao đổi tín hiệu để mở DataChannel trực tiếp; TURN chuyển tiếp khi mạng giới hạn kết nối ngang hàng.</p>
       </div>
       {blocking && (
         <Modal

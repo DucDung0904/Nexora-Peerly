@@ -103,3 +103,35 @@ export interface LikeResult {
   mutual: boolean;
   matchId: string | null;
 }
+
+export interface ConversationView {
+  id: string;
+  matchId: string | null;
+  socialInviteId: string | null;
+  otherUserId: string;
+  displayName: string;
+  createdAt: string;
+}
+
+export interface SocialInviteView {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  senderName: string;
+  recipientName: string;
+  goalCode: Goal;
+  expiresAt: string;
+}
+
+export interface SocialInviteResult {
+  id: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "CANCELLED";
+  expiresAt: string;
+  conversationId: string | null;
+}
+
+export interface IceServerView {
+  urls: string[];
+  username: string | null;
+  credential: string | null;
+}

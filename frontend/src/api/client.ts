@@ -2,14 +2,18 @@ import type {
   AuthResponse,
   Candidate,
   Catalog,
+  ConversationView,
   DatingProfile,
   DatingUpdate,
   Goal,
   LikeResult,
   LoginRequest,
+  IceServerView,
   MatchView,
   RegisterRequest,
   SocialProfile,
+  SocialInviteResult,
+  SocialInviteView,
   SocialUpdate,
   UserView,
 } from "./types";
@@ -257,6 +261,27 @@ export const api = {
       `/dating/blocks/${encodeURIComponent(userId)}`,
       { method: "POST", token },
     ),
+  getConversations: (token: string, signal?: AbortSignal) =>
+    request<ConversationView[]>("/chat/conversations", { token, signal }),
+  getSocialInvites: (token: string, signal?: AbortSignal) =>
+    request<SocialInviteView[]>("/social/invites", { token, signal }),
+  inviteSocial: (token: string, userId: string, goal: Goal) =>
+    request<SocialInviteResult>(
+      `/social/invites/${encodeURIComponent(userId)}?${new URLSearchParams({ goal })}`,
+      { method: "POST", token },
+    ),
+  respondSocialInvite: (token: string, inviteId: string, accept: boolean) =>
+    request<SocialInviteResult>(
+      `/social/invites/${encodeURIComponent(inviteId)}/${accept ? "accept" : "reject"}`,
+      { method: "POST", token },
+    ),
+  openConversation: (token: string, matchId: string) =>
+    request<ConversationView>(`/chat/matches/${encodeURIComponent(matchId)}`, {
+      method: "POST",
+      token,
+    }),
+  getIceServers: (token: string, signal?: AbortSignal) =>
+    request<IceServerView[]>("/rtc/ice-servers", { token, signal }),
   health: (signal?: AbortSignal) =>
     request<{ status: string }>("", { url: healthUrl, signal }),
 };

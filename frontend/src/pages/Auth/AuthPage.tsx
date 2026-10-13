@@ -137,7 +137,7 @@ function AuthForm({ mode }: { mode: AuthMode }) {
       if (!validBirthDate(birthDate))
         nextErrors.birthDate = "Chọn ngày sinh hợp lệ.";
       else if (birthDate > cutoff)
-        nextErrors.birthDate = "Bạn cần đủ 18 tuổi để tham gia Nexora Peerly.";
+        nextErrors.birthDate = "Bạn cần đủ 18 tuổi để tham gia Nexory Peerly.";
       if (!confirmation)
         nextErrors.confirmation = "Nhập lại mật khẩu để xác nhận.";
       else if (confirmation !== password)
@@ -490,7 +490,7 @@ function AuthForm({ mode }: { mode: AuthMode }) {
           </CosmicButton>
         </form>
         <p className="account-switch">
-          {register ? "Bạn đã có tài khoản?" : "Lần đầu đến với Nexora?"}{" "}
+          {register ? "Bạn đã có tài khoản?" : "Lần đầu đến với Nexory?"}{" "}
           <Link
             to={register ? "/login" : "/register"}
             state={location.state}

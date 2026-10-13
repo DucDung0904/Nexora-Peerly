@@ -5,12 +5,12 @@ import {
   HeartHandshake,
   LogOut,
   MessageCircle,
-  Orbit,
   UserRound,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { CosmicButton, Modal } from "../ui/cosmic";
 import { errorMessage } from "../../i18n/vi";
+import { NexoryLogo } from "../common/NexoryLogo";
 
 const navigation = [
   { to: "/discover", label: "Khám phá", icon: Compass },
@@ -61,15 +61,9 @@ export function AppShell() {
           <Link
             to="/discover"
             className="brand"
-            aria-label="Nexora Peerly — Trang chủ"
+            aria-label="Nexory Peerly — Trang chủ"
           >
-            <span className="brand-icon">
-              <Orbit size={25} aria-hidden="true" />
-            </span>
-            <span>
-              Nexora<span className="brand-light"> Peerly</span>
-              <span className="brand-period">.</span>
-            </span>
+            <NexoryLogo />
           </Link>
           {auth.user && (
             <nav className="desktop-nav" aria-label="Điều hướng chính">
@@ -119,11 +113,10 @@ export function AppShell() {
       </main>
       <footer className="footer">
         <span>
-          <Orbit size={15} aria-hidden="true" /> Mỗi kết nối bắt đầu từ một lời
-          chào.
+          <span aria-hidden="true">N</span> Mỗi kết nối bắt đầu từ một lời chào.
         </span>
         <span>
-          Nexora Peerly <span className="footer-dot">·</span> Kết nối theo cách
+          Nexory Peerly <span className="footer-dot">·</span> Kết nối theo cách
           của bạn
         </span>
       </footer>

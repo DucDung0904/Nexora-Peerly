@@ -5,6 +5,7 @@ export default defineConfig(({ mode }) => {
   const target = env.BACKEND_URL || "http://127.0.0.1:8080";
   return { plugins: [react()], server: { proxy: {
     "/api": { target, changeOrigin: true },
+    "/ws": { target, changeOrigin: true, ws: true },
     "/actuator/health": { target, changeOrigin: true },
   } } };
 });

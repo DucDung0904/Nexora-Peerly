@@ -2,14 +2,14 @@
   color-scheme: dark;
 
   /* Background layers */
-  --color-background: #0B1022;
-  --color-surface: #151E3A;
-  --color-surface-elevated: #1D2945;
+  --color-background: #101426;
+  --color-surface: #171d33;
+  --color-surface-elevated: #222a41;
 
   /* Brand and interaction */
-  --color-primary: #8B5CF6;
-  --color-primary-hover: #7C3AED;
-  --color-secondary: #22D3EE;
+  --color-primary: #9B7BFF;
+  --color-primary-hover: #8060e5;
+  --color-secondary: #56E0D0;
 
   /* Typography */
   --color-text-primary: #F8FAFC;
@@ -21,5 +21,18 @@
   --color-danger: #FB7185;
 
   /* Boundaries */
-  --color-border: #2C3554;
+  --color-border: #303951;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+  --shadow-card: 0 18px 50px #03050d35;
+  --shadow-focus: 0 0 0 3px #9b7bff33;
 }

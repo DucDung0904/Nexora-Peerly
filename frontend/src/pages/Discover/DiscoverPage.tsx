@@ -72,6 +72,7 @@ export function DiscoverPage() {
   const [likes, setLikes] = useState<
     Record<string, "pending" | "liked" | "mutual">
   >({});
+  const [invites, setInvites] = useState<Record<string, "pending" | "sent">>({});
   const [notice, setNotice] = useState("");
   const [actionError, setActionError] = useState("");
   const searchController = useRef<AbortController | null>(null);
@@ -113,6 +114,7 @@ export function DiscoverPage() {
   useEffect(() => {
     searchController.current?.abort();
     setCandidates(null);
+    setInvites({});
     setSearching(false);
     setSearchError("");
     setDetail(null);
@@ -193,6 +195,32 @@ export function DiscoverPage() {
     } catch (error) {
       if (active.current) {
         setLikes((current) => {
+          const next = { ...current };
+          delete next[person.id];
+          return next;
+        });
+        setActionError(errorMessage(error));
+      }
+    } finally {
+      actionLocks.current.delete(person.id);
+    }
+  }
+
+  async function invite(person: Candidate) {
+    if (!token || actionLocks.current.has(person.id)) return;
+    actionLocks.current.add(person.id);
+    setInvites((current) => ({ ...current, [person.id]: "pending" }));
+    setActionError("");
+    try {
+      const result = await api.inviteSocial(token, person.id, goal);
+      if (result.status !== "PENDING")
+        throw new ApiError("Chưa thể gửi lời mời kết nối. Vui lòng thử lại.", 502);
+      if (!active.current || blockedIds.current.has(person.id)) return;
+      setInvites((current) => ({ ...current, [person.id]: "sent" }));
+      setNotice(`Đã gửi lời mời kết nối tới ${person.displayName}. Lời mời có hiệu lực trong 45 giây.`);
+    } catch (error) {
+      if (active.current) {
+        setInvites((current) => {
           const next = { ...current };
           delete next[person.id];
           return next;
@@ -314,6 +342,7 @@ export function DiscoverPage() {
                   {goals.map(({ code, icon: Icon, description }) => (
                     <button
                       key={code}
+                      aria-label={labelFor(code)}
                       aria-pressed={goal === code}
                       onClick={() => setGoal(code)}
                     >
@@ -554,7 +583,27 @@ export function DiscoverPage() {
                                   {person.displayName}
                                 </span>
                               </CosmicButton>
-                              {mode === "dating" && (
+                              {mode === "social" ? (
+                                <CosmicButton
+                                  variant="secondary"
+                                  disabled={
+                                    !!invites[person.id] ||
+                                    actionLocks.current.has(person.id) ||
+                                    (blocking && blockTarget?.id === person.id)
+                                  }
+                                  aria-label={`${invites[person.id] === "sent" ? "Đã gửi lời mời tới" : "Gửi lời mời tới"} ${person.displayName}`}
+                                  onClick={() => void invite(person)}
+                                >
+                                  {invites[person.id] === "pending" ? (
+                                    <LoadingIndicator label="Đang gửi…" />
+                                  ) : (
+                                    <>
+                                      <MessageCircle size={16} />
+                                      {invites[person.id] === "sent" ? "Đã gửi lời mời" : "Kết nối"}
+                                    </>
+                                  )}
+                                </CosmicButton>
+                              ) : (
                                 <CosmicButton
                                   disabled={
                                     !!likes[person.id] ||

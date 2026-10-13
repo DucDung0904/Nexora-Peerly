@@ -1,0 +1,14 @@
+{
+  "name": "Nexory Peerly",
+  "short_name": "Peerly",
+  "description": "Tìm bạn đồng điệu và những kết nối có ý nghĩa.",
+  "lang": "vi",
+  "start_url": "/discover",
+  "display": "standalone",
+  "background_color": "#101426",
+  "theme_color": "#101426",
+  "icons": [
+    { "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

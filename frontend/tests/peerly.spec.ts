@@ -2,7 +2,12 @@ import { randomUUID } from "node:crypto";
 import { copyFile, mkdir, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test, expect } from "@playwright/test";
-import type { APIRequestContext, Page, Route } from "@playwright/test";
+import type {
+  APIRequestContext,
+  Page,
+  Route,
+  TestInfo,
+} from "@playwright/test";
 import type {
   AuthResponse,
   DatingUpdate,
@@ -47,11 +52,15 @@ async function forwardToTestBackend(route: Route) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.route("**/api/**", forwardToTestBackend);
+  await page.route(
+    (url) => url.pathname.startsWith("/api/"),
+    forwardToTestBackend,
+  );
   await page.route("**/actuator/health", forwardToTestBackend);
 });
 
-test.afterEach(async (_fixtures, testInfo) => {
+// eslint-disable-next-line no-empty-pattern -- Playwright requires destructured fixtures.
+test.afterEach(async ({}, testInfo) => {
   const directory = resolve(testInfo.config.rootDir, "..", ".local", "e2e");
   await mkdir(directory, { recursive: true });
   const files = await readdir(testInfo.outputDir).catch(() => [] as string[]);
@@ -124,6 +133,21 @@ async function assertNoOverflow(page: Page) {
   ).toBe(true);
 }
 
+async function capture(page: Page, testInfo: TestInfo, name: string) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    await new Promise<void>((resolveFrame) =>
+      requestAnimationFrame(() => resolveFrame()),
+    );
+  });
+  await page.screenshot({
+    path: testInfo.outputPath(name),
+    fullPage: true,
+    animations: "disabled",
+  });
+}
+
 test("registers, saves separate profiles, restores the session and revokes logout", async ({
   page,
   request,
@@ -194,13 +218,10 @@ test("registers, saves separate profiles, restores the session and revokes logou
     .getByRole("button", { name: "Lưu hồ sơ hẹn hò", exact: true })
     .click();
   await expect(page.getByRole("status")).toContainText("Đã lưu hồ sơ hẹn hò");
-  await page.screenshot({
-    path: testInfo.outputPath("profile-dating-desktop.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
+  await capture(page, testInfo, "profile-dating-desktop.png");
 
   await page.reload();
+  await page.getByRole("tab", { name: /Kết bạn/ }).click();
   await expect(page.getByLabel("Đôi lời về bạn", { exact: true })).toHaveValue(
     socialProfile.bio,
   );
@@ -272,7 +293,7 @@ test("validates registration, reports duplicate accounts and wrong credentials i
     .getByRole("button", { name: "Bắt đầu hành trình", exact: true })
     .click();
   await expect(
-    page.getByText("Bạn cần đủ 18 tuổi để tham gia Nexora Peerly.", {
+    page.getByText("Bạn cần đủ 18 tuổi để tham gia Nexory Peerly.", {
       exact: true,
     }),
   ).toBeVisible();
@@ -285,11 +306,7 @@ test("validates registration, reports duplicate accounts and wrong credentials i
   );
   await page.goto("/matches");
   await expect(page).toHaveURL(/\/login$/);
-  await page.screenshot({
-    path: testInfo.outputPath("login-desktop.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
+  await capture(page, testInfo, "login-desktop.png");
   await page.getByLabel("Email", { exact: true }).fill(account.user.email);
   await page.getByLabel("Mật khẩu", { exact: true }).fill("wrong-password");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
@@ -416,11 +433,7 @@ test("discovers real profiles, creates a mutual match and blocks it", async ({
   await expect(
     page.getByRole("heading", { name: "Linh Sao", exact: true }),
   ).toBeVisible();
-  await page.screenshot({
-    path: testInfo.outputPath("discover-results-desktop.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
+  await capture(page, testInfo, "discover-results-desktop.png");
   await page
     .getByRole("button", { name: "Thích Linh Sao", exact: true })
     .click();
@@ -442,11 +455,7 @@ test("discovers real profiles, creates a mutual match and blocks it", async ({
   await expect(
     page.getByRole("heading", { name: "Linh Sao", exact: true }),
   ).toBeVisible();
-  await page.screenshot({
-    path: testInfo.outputPath("matches-desktop.png"),
-    fullPage: true,
-    animations: "disabled",
-  });
+  await capture(page, testInfo, "matches-desktop.png");
   await page
     .getByRole("button", { name: "Chặn Linh Sao", exact: true })
     .click();
@@ -480,11 +489,7 @@ for (const width of [375, 768]) {
     await page.setViewportSize({ width, height: 850 });
     await page.goto("/register");
     await assertNoOverflow(page);
-    await page.screenshot({
-      path: testInfo.outputPath(`register-${width}.png`),
-      fullPage: true,
-      animations: "disabled",
-    });
+    await capture(page, testInfo, `register-${width}.png`);
     const account = await createAccount(request, "Nguyễn Minh Ánh Dương");
     await configureProfiles(request, account);
     await openSession(page, account);
@@ -492,11 +497,7 @@ for (const width of [375, 768]) {
       page.getByLabel("Đôi lời về bạn", { exact: true }),
     ).toHaveValue(socialProfile.bio);
     await assertNoOverflow(page);
-    await page.screenshot({
-      path: testInfo.outputPath(`profile-${width}.png`),
-      fullPage: true,
-      animations: "disabled",
-    });
+    await capture(page, testInfo, `profile-${width}.png`);
     await page.getByRole("tab", { name: /Hẹn hò/ }).click();
     await assertNoOverflow(page);
     for (const route of ["discover", "matches", "messages"]) {
@@ -519,11 +520,7 @@ for (const width of [375, 768]) {
         ).toBeVisible();
       }
       await assertNoOverflow(page);
-      await page.screenshot({
-        path: testInfo.outputPath(`${route}-${width}.png`),
-        fullPage: true,
-        animations: "disabled",
-      });
+      await capture(page, testInfo, `${route}-${width}.png`);
     }
   });
 }
